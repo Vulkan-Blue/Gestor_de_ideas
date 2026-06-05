@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Design Organizer Pro</title>
+    <!-- Tailwind CSS para un diseño oscuro estilo gaming profesional -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Iconos Lucide -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen font-sans antialiased">
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
+        
+        <!-- CABECERA -->
+        <header class="border-b border-gray-800 pb-6 mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+                <h1 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 flex items-center gap-2">
+                    🎮 GDD Concept Organizer
+                </h1>
+                <p class="text-gray-400 text-sm mt-1">Estructura jerárquicamente ideas, ítems, acciones y links del diseño de tu videojuego.</p>
+            </div>
+            <!-- Estado de Guardado en tiempo real -->
+            <div id="saveIndicator" class="flex items-center gap-2 text-xs bg-emerald-950/80 text-emerald-400 border border-emerald-800/60 px-3 py-1.5 rounded-full">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                Guardado en Base de Datos Local (IndexedDB)
+            </div>
+        </header>
+
+        <!-- SECCIÓN 1: TARJETAS DE ACCESO RÁPIDO (ENLACES X) -->
+        <section class="mb-10">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-semibold text-gray-200 flex items-center gap-2">
+                    <i data-lucide="link" class="text-indigo-400 w-5 h-5"></i> Enlaces y Accesos Rápidos
+                </h2>
+                <button onclick="toggleModal('linkModal', true)" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3.5 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1">
+                    <i data-lucide="plus" class="w-4 h-4"></i> Agregar Enlace
+                </button>
+            </div>
+            
+            <!-- Grid de Tarjetas -->
+            <div id="linksGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                <!-- Dinámico con JS -->
+            </div>
+        </section>
+
+        <hr class="border-gray-900 mb-10">
+
+        <!-- SECCIÓN 2: ÁRBOL DE IDEAS (GRUPOS, SUBGRUPOS E ÍTEMS) -->
+        <section>
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                <h2 class="text-lg font-semibold text-gray-200 flex items-center gap-2">
+                    <i data-lucide="folder-tree" class="text-emerald-400 w-5 h-5"></i> Árbol de Conceptos
+                </h2>
+                <div class="flex gap-2 w-full sm:w-auto">
+                    <button onclick="openGroupModal(null)" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-xs font-semibold transition flex items-center justify-center gap-1.5 w-full sm:w-auto">
+                        <i data-lucide="folder-plus" class="w-4 h-4"></i> Crear Grupo Raíz
+                    </button>
+                </div>
+            </div>
+
+            <!-- Contenedor Principal del Árbol -->
+            <div id="treeContainer" class="bg-gray-900/60 p-5 md:p-8 rounded-2xl border border-gray-800/80 min-h-[350px] shadow-inner">
+                <!-- Dinámico con JS -->
+            </div>
+        </section>
+    </div>
+
+    <!-- ================= MODALES DE CONFIGURACIÓN ================= -->
+
+    <!-- 1. Modal para Agregar Enlaces -->
+    <div id="linkModal" class="hidden fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+        <div class="bg-gray-900 rounded-2xl p-6 w-full max-w-md border border-gray-800 shadow-2xl">
+            <h3 class="text-lg font-bold mb-4 text-indigo-400 flex items-center gap-2">
+                <i data-lucide="link-2"></i> Nuevo Acceso Rápido
+            </h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 mb-1">Nombre de la Tarjeta</label>
+                    <input type="text" id="linkName" placeholder="Ej: Tablero de Trello, Inspiración" class="w-full bg-gray-950 border border-gray-800 rounded-lg p-2.5 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 mb-1">URL Enlace</label>
+                    <input type="url" id="linkUrl" placeholder="https://ejemplo.com" class="w-full bg-gray-950 border border-gray-800 rounded-lg p-2.5 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 mb-1">Icono Representativo</label>
+                    <select id="linkIcon" class="w-full bg-gray-950 border border-gray-800 rounded-lg p-2.5 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500">
+                        <option value="external-link">🌐 Enlace Estándar</option>
+                        <option value="swords">⚔️ Espadas / Combate</option>
+                        <option value="shield">🛡️ Escudo / Defensa</option>
+                        <option value="scroll">📜 Lore / Historia</option>
+                        <option value="palette">🎨 Arte / Diseño</option>
+                        <option value="code-2">💻 Código / Lógica</option>
+                        <option value="coins">🪙 Economía / Botín</option>
+                        <option value="sparkles">✨ Magia / Habilidades</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 mt-6">
+                <button onclick="toggleModal('linkModal', false)" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-xs font-semibold transition text-gray-300">Cancelar</button>
+                <button onclick="saveLink()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-xs font-semibold transition text-white">Guardar Enlace</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Modal para Crear Grupos / Subgrupos -->
+    <div id="groupModal" class="hidden fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+        <div class="bg-gray-900 rounded-2xl p-6 w-full max-w-md border border-gray-800 shadow-2xl">
+            <h3 id="groupModalTitle" class="text-lg font-bold mb-4 text-emerald-400">Crear Grupo</h3>
+            <input type="hidden" id="parentGroupId">
+            <div>
+                <label class="block text-xs font-semibold text-gray-400 mb-1.5">Nombre del Grupo</label>
+                <input type="text" id="groupName" placeholder="Ej: Espadas de Cobre, Items de Curación..." class="w-full bg-gray-950 border border-gray-800 rounded-lg p-2.5 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500">
+            </div>
+            <div class="flex justify-end gap-2 mt-6">
+                <button onclick="toggleModal('groupModal', false)" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-xs font-semibold transition text-gray-300">Cancelar</button>
+                <button onclick="saveGroup()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-xs font-semibold transition text-white">Crear Grupo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Modal para Crear Ítems / Funciones / Hojas Finales -->
+    <div id="itemModal" class="hidden fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+        <div class="bg-gray-900 rounded-2xl p-6 w-full max-w-lg border border-gray-800 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <h3 class="text-lg font-bold mb-4 text-indigo-400 flex items-center gap-2">
+                <i data-lucide="file-plus-2"></i> Especificar Elemento / Item / Acción
+            </h3>
+            <input type="hidden" id="itemParentGroupId">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 mb-1">Nombre del Elemento</label>
+                    <input type="text" id="itemName" class="w-full bg-gray-950 border border-gray-800 rounded-lg p-2.5 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500" placeholder="Ej: Espada de Cobre Rompecorazas">
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 mb-1">Tipo / Clasificación</label>
+                        <input type="text" id="itemType" class="w-full bg-gray-950 border border-gray-800 rounded-lg p-2.5 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50" placeholder="Ej: Arma de una mano, Script, Buff...">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 mb-1">Atributos / Cooldown</label>
+                        <input type="text" id="itemValue" class="w-full bg-gray-950 border border-gray-800 rounded-lg p-2.5 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50" placeholder="Ej: Daño: +15, CD: 2s...">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 mb-1">Descripción, Comportamiento o Lore</label>
+                    <textarea id="itemDesc" rows="4" class="w-full bg-gray-950 border border-gray-800 rounded-lg p-2.5 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 text-sm" placeholder="Escribe aquí los detalles del diseño, mecánicas que activa, etc."></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 mb-1">Subir Imagen / Concept Art</label>
+                    <div class="relative flex flex-col items-center justify-center border-2 border-dashed border-gray-800 rounded-xl p-4 bg-gray-950/50 hover:bg-gray-950 transition">
+                        <input type="file" id="itemImage" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
+                        <i data-lucide="image" class="w-8 h-8 text-gray-500 mb-2"></i>
+                        <span class="text-xs text-gray-400 font-medium" id="uploadLabel">Haz clic o arrastra una imagen</span>
+                        <span class="text-[10px] text-gray-600 mt-1">Soporta PNG, JPG, GIF</span>
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 mt-6">
+                <button onclick="toggleModal('itemModal', false)" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-xs font-semibold transition text-gray-300">Cancelar</button>
+                <button onclick="saveItem()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-xs font-semibold transition text-white">Añadir Elemento</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ================= LOGICA DE DATOS CON INDEXEDDB ================= -->
+    <script>
+        // Configuración de la Base de Datos local robusta (IndexedDB)
+        const DB_NAME = 'GDD_Organizer_DB';
+        const DB_VERSION = 1;
+        let db;
+
+        // Estructuras de datos dinámicas
+        let links = [];
+        let treeData = [];
+
+        // Inicializar IndexedDB
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+                request.onerror = (event) => {
+                    console.error('Error al inicializar la base de datos:', event);
+                    reject(event);
+                };
+
+                request.onsuccess = (event) => {
+                    db = event.target.result;
+                    resolve(db);
+                };
+
+                request.onupgradeneeded = (event) => {
+                    const database = event.target.result;
+                    
+                    // Almacén para los enlaces rápidos de la interfaz
+                    if (!database.objectStoreNames.contains('links')) {
+                        database.createObjectStore('links', { keyPath: 'id' });
+                    }
+                    
+                    // Almacén para el Árbol completo de Conceptos e Items
+                    if (!database.objectStoreNames.contains('gdd_tree')) {
+                        database.createObjectStore('gdd_tree', { keyPath: 'id' });
+                    }
+                };
+            });
+        }
+
+        // Cargar todo al inicio
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                await initDB();
+                await loadAllData();
+                renderLinks();
+                renderTree();
+            } catch (err) {
+                console.error("Fallo general de base de datos:", err);
+            }
+
+            // Cambiar dinámicamente el nombre del archivo seleccionado al subir
+            const fileInput = document.getElementById('itemImage');
+            const labelText = document.getElementById('uploadLabel');
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    labelText.textContent = e.target.files[0].name;
+                    labelText.classList.add('text-indigo-400');
+                } else {
+                    labelText.textContent = 'Haz clic o arrastra una imagen';
+                    labelText.classList.remove('text-indigo-400');
+                }
+            });
+        });
+
+        // Cargar datos de la BD
+        function loadAllData() {
+            return new Promise((resolve) => {
+                const transaction = db.transaction(['links', 'gdd_tree'], 'readonly');
+                const linksStore = transaction.objectStore('links');
+                const treeStore = transaction.objectStore('gdd_tree');
+
+                // Obtener Links
+                linksStore.getAll().onsuccess = (e) => {
+                    links = e.target.result || [];
+                };
+
+                // Obtener el árbol. Guardaremos un único nodo raíz serializado para simplificar,
+                // o bien todos los nodos de primer nivel individualmente.
+                treeStore.getAll().onsuccess = (e) => {
+                    treeData = e.target.result || [];
+                    resolve();
+                };
+            });
+        }
+
+        // Sincronizar un elemento del árbol en IndexedDB
+        function saveNodeToDB(node) {
+            const transaction = db.transaction(['gdd_tree'], 'readwrite');
+            const store = transaction.objectStore('gdd_tree');
+            store.put(node);
+        }
+
+        // Borrar un nodo raíz completo o sincronizar todo el árbol
+        function syncTreeToDB() {
+            const transaction = db.transaction(['gdd_tree'], 'readwrite');
+            const store = transaction.objectStore('gdd_tree');
+            
+            // Limpiamos los existentes y rescribimos para asegurar coherencia
+            store.clear().onsuccess = () => {
+                treeData.forEach(node => {
+                    store.add(node);
+                });
+            };
+            showSavedIndicator();
+        }
+
+        // Guardar links en base de datos
+        function syncLinksToDB() {
+            const transaction = db.transaction(['links'], 'readwrite');
+            const store = transaction.objectStore('links');
+            store.clear().onsuccess = () => {
+                links.forEach(link => {
+                    store.add(link);
+                });
+            };
+            showSavedIndicator();
+        }
+
+        // Mostrar indicador animado de guardado
+        function showSavedIndicator() {
+            const indicator = document.getElementById('saveIndicator');
+            indicator.classList.remove('opacity-50');
+            indicator.classList.add('opacity-100');
+            setTimeout(() => {
+                indicator.classList.add('opacity-80');
+            }, 1000);
+        }
+
+        // Abrir y cerrar Modales
+        function toggleModal(modalId, show) {
+            const modal = document.getElementById(modalId);
+            if(show) {
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+                // Limpiar label de carga de imagen al cerrar
+                if (modalId === 'itemModal') {
+                    document.getElementById('uploadLabel').textContent = 'Haz clic o arrastra una imagen';
+                    document.getElementById('uploadLabel').classList.remove('text-indigo-400');
+                }
+            }
+        }
+
+        /* --- LÓGICA DE LOS ACCESOS RÁPIDOS (ENLACES) --- */
+        function saveLink() {
+            const name = document.getElementById('linkName').value;
+            let url = document.getElementById('linkUrl').value;
+            const icon = document.getElementById('linkIcon').value;
+
+            if(!name || !url) return;
+
+            // Autocompletar protocolo http/https para evitar errores
+            if (!/^https?:\/\//i.test(url)) {
+                url = 'https://' + url;
+            }
+
+            links.push({ id: 'link_' + Date.now(), name, url, icon });
+            syncLinksToDB();
+            renderLinks();
+            toggleModal('linkModal', false);
+            
+            // Limpiar inputs
+            document.getElementById('linkName').value = '';
+            document.getElementById('linkUrl').value = '';
+        }
+
+        function deleteLink(id, e) {
+            e.stopPropagation();
+            links = links.filter(l => l.id !== id);
+            syncLinksToDB();
+            renderLinks();
+        }
+
+        function renderLinks() {
+            const grid = document.getElementById('linksGrid');
+            grid.innerHTML = '';
+            
+            if(links.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full border border-dashed border-gray-800 p-6 rounded-xl text-center text-gray-500 text-sm">
+                        No hay accesos rápidos agregados. Crea enlaces de rápido acceso a tus recursos externos.
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            links.forEach(link => {
+                grid.innerHTML += `
+                    <div onclick="window.open('${link.url}', '_blank')" class="bg-gray-900 hover:bg-gray-900/80 p-4 rounded-xl border border-gray-800 flex items-center justify-between cursor-pointer hover:border-indigo-500/80 transition-all duration-300 group">
+                        <div class="flex items-center gap-3 overflow-hidden">
+                            <div class="p-2.5 bg-gray-950 rounded-xl text-indigo-400 border border-gray-800/80">
+                                <i data-lucide="${link.icon || 'external-link'}" class="w-5 h-5"></i>
+                            </div>
+                            <div class="overflow-hidden">
+                                <h4 class="font-bold text-sm text-gray-200 group-hover:text-indigo-400 transition-colors truncate">${link.name}</h4>
+                                <span class="text-[10px] text-gray-500 block truncate w-32">${link.url}</span>
+                            </div>
+                        </div>
+                        <button onclick="deleteLink('${link.id}', event)" class="text-gray-600 hover:text-red-400 p-1.5 rounded-lg hover:bg-gray-950 transition-colors ml-2">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                `;
+            });
+            lucide.createIcons();
+        }
+
+
+        /* --- LÓGICA DEL ÁRBOL JERÁRQUICO --- */
+        
+        function openGroupModal(parentId) {
+            document.getElementById('parentGroupId').value = parentId || '';
+            document.getElementById('groupModalTitle').innerText = parentId ? 'Crear Subgrupo de Ideas' : 'Crear Grupo Raíz';
+            document.getElementById('groupName').value = '';
+            toggleModal('groupModal', true);
+        }
+
+        function saveGroup() {
+            const name = document.getElementById('groupName').value;
+            const parentId = document.getElementById('parentGroupId').value;
+
+            if(!name) return;
+
+            const newGroup = {
+                id: 'group_' + Date.now(),
+                type: 'group',
+                name: name,
+                children: []
+            };
+
+            if(!parentId) {
+                treeData.push(newGroup);
+            } else {
+                const parent = findNodeById(treeData, parentId);
+                if(parent) {
+                    parent.children.push(newGroup);
+                }
+            }
+
+            syncTreeToDB();
+            renderTree();
+            toggleModal('groupModal', false);
+        }
+
+        function openItemModal(groupId) {
+            document.getElementById('itemParentGroupId').value = groupId;
+            document.getElementById('itemName').value = '';
+            document.getElementById('itemType').value = '';
+            document.getElementById('itemValue').value = '';
+            document.getElementById('itemDesc').value = '';
+            document.getElementById('itemImage').value = '';
+            toggleModal('itemModal', true);
+        }
+
+        // Compresión rápida de imagen por canvas para ahorrar espacio y cargar instantáneamente
+        function compressAndProcessImage(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 600; // Suficiente calidad para vista previa de item
+                        const scaleSize = MAX_WIDTH / img.width;
+                        
+                        if (img.width > MAX_WIDTH) {
+                            canvas.width = MAX_WIDTH;
+                            canvas.height = img.height * scaleSize;
+                        } else {
+                            canvas.width = img.width;
+                            canvas.height = img.height;
+                        }
+                        
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        
+                        // Convertir a JPEG para máxima compresión
+                        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                        resolve(compressedDataUrl);
+                    };
+                };
+            });
+        }
+
+        async function saveItem() {
+            const name = document.getElementById('itemName').value;
+            const groupId = document.getElementById('itemParentGroupId').value;
+            const itemType = document.getElementById('itemType').value;
+            const itemValue = document.getElementById('itemValue').value;
+            const desc = document.getElementById('itemDesc').value;
+            const imageFile = document.getElementById('itemImage').files[0];
+
+            if(!name) return;
+
+            const newItem = {
+                id: 'item_' + Date.now(),
+                type: 'item',
+                name: name,
+                itemType: itemType || 'Sin categoría',
+                itemValue: itemValue || '-',
+                desc: desc || '',
+                image: ''
+            };
+
+            if(imageFile) {
+                // Comprimir y procesar antes de guardar
+                newItem.image = await compressAndProcessImage(imageFile);
+            }
+            
+            addItemToGroup(groupId, newItem);
+        }
+
+        function addItemToGroup(groupId, item) {
+            const group = findNodeById(treeData, groupId);
+            if(group) {
+                group.children.push(item);
+                syncTreeToDB();
+                renderTree();
+            }
+            toggleModal('itemModal', false);
+        }
+
+        // Buscar recursivamente un elemento
+        function findNodeById(nodes, id) {
+            for (let node of nodes) {
+                if (node.id === id) return node;
+                if (node.children) {
+                    const found = findNodeById(node.children, id);
+                    if (found) return found;
+                }
+            }
+            return null;
+        }
+
+        function deleteNode(id, e) {
+            e.stopPropagation();
+            
+            // Creamos una advertencia más limpia que los molestos alerts nativos de navegador
+            if(!confirm('¿Estás seguro de eliminar este elemento? Si es un grupo se perderán todos los subgrupos y elementos dentro.')) {
+                return;
+            }
+            
+            treeData = removeNodeRecursive(treeData, id);
+            syncTreeToDB();
+            renderTree();
+        }
+
+        function removeNodeRecursive(nodes, id) {
+            return nodes.filter(node => {
+                if (node.id === id) return false;
+                if (node.children) node.children = removeNodeRecursive(node.children, id);
+                return true;
+            });
+        }
+
+        // Descarga de archivos de imagen reconstruida de IndexedDB
+        function downloadImage(base64Data, filename) {
+            const link = document.createElement('a');
+            link.href = base64Data;
+            link.download = filename || 'gdd-concept-art.jpg';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Renderizado Dinámico e Inteligente del Árbol de Conceptos
+        function generateTreeHTML(nodes) {
+            if(!nodes || nodes.length === 0) return '';
+
+            return `
+                <ul class="pl-2 md:pl-6 border-l border-gray-800/80 space-y-4 mt-3">
+                    ${nodes.map(node => {
+                        if(node.type === 'group') {
+                            return `
+                                <li class="bg-gray-900/30 p-4 rounded-xl border border-gray-800/40">
+                                    <div class="flex items-center justify-between flex-wrap gap-2 mb-2 pb-2 border-b border-gray-800/40">
+                                        <span class="font-bold text-amber-400 flex items-center gap-2 text-sm tracking-wide">
+                                            <i data-lucide="folder" class="w-4.5 h-4.5 text-amber-500 fill-amber-500/20"></i> ${node.name}
+                                        </span>
+                                        <div class="flex gap-1.5">
+                                            <button onclick="openGroupModal('${node.id}')" class="text-[11px] bg-gray-950 hover:bg-gray-800 text-gray-300 px-2.5 py-1 rounded-md border border-gray-800 transition" title="Añadir Subgrupo">+ Subgrupo</button>
+                                            <button onclick="openItemModal('${node.id}')" class="text-[11px] bg-indigo-950 hover:bg-indigo-900 text-indigo-300 px-2.5 py-1 rounded-md border border-indigo-900/50 transition" title="Añadir Elemento">+ Elemento</button>
+                                            <button onclick="deleteNode('${node.id}', event)" class="text-gray-500 hover:text-red-400 p-1 rounded hover:bg-gray-950/60 transition">
+                                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    ${generateTreeHTML(node.children)}
+                                </li>
+                            `;
+                        } else {
+                            // Renderizado de las Hojas/Tarjetas Finales de Ítems/Mecánicas
+                            return `
+                                <li class="bg-gray-950/70 border border-gray-800/80 p-4 rounded-xl shadow-md mt-2 hover:border-gray-700/80 transition-colors">
+                                    <div class="flex flex-col lg:flex-row justify-between gap-4">
+                                        <div class="flex-1 space-y-2">
+                                            <div class="flex items-center flex-wrap gap-2">
+                                                <span class="bg-indigo-950 text-indigo-300 text-[10px] uppercase tracking-wider font-extrabold px-2.5 py-0.5 rounded-full border border-indigo-900/60 font-mono">${node.itemType}</span>
+                                                <h5 class="font-bold text-gray-100 text-base">${node.name}</h5>
+                                            </div>
+                                            <div class="text-[11px] text-gray-400 font-mono bg-gray-900/60 px-2 py-1 rounded border border-gray-800/40 inline-block">
+                                                Propiedades/Valores: <span class="text-indigo-400 font-bold">${node.itemValue}</span>
+                                            </div>
+                                            <p class="text-sm text-gray-300 bg-gray-950 p-3 rounded-lg border border-gray-900 whitespace-pre-wrap leading-relaxed">${node.desc || 'Sin especificaciones añadidas.'}</p>
+                                        </div>
+                                        
+                                        <!-- Vista y descarga de imágenes -->
+                                        ${node.image ? `
+                                        <div class="flex flex-col items-center justify-center bg-gray-900/50 p-2 rounded-xl border border-gray-800 w-full lg:w-36 self-start">
+                                            <img src="${node.image}" class="h-24 w-full object-cover rounded-lg border border-gray-800 shadow-md">
+                                            <button onclick="downloadImage('${node.image}', '${node.name}.jpg')" class="text-[10px] mt-2 bg-gray-950 hover:bg-gray-800 text-indigo-400 font-bold py-1.5 px-2.5 rounded-md flex items-center gap-1.5 w-full justify-center border border-gray-800 transition">
+                                                <i data-lucide="download-cloud" class="w-3.5 h-3.5"></i> Guardar Imagen
+                                            </button>
+                                        </div>
+                                        ` : ''}
+
+                                        <div class="flex items-start justify-end lg:self-start">
+                                            <button onclick="deleteNode('${node.id}', event)" class="text-gray-500 hover:text-red-400 p-1.5 rounded-lg hover:bg-gray-900 transition">
+                                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </li>
+                            `;
+                        }
+                    }).join('')}
+                </ul>
+            `;
+        }
+
+        function renderTree() {
+            const container = document.getElementById('treeContainer');
+            if(treeData.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-16 text-gray-500">
+                        <i data-lucide="layout-grid" class="w-12 h-12 mx-auto mb-4 text-gray-600"></i>
+                        <h4 class="text-gray-400 font-bold mb-1">Tu Árbol de Ideas está vacío</h4>
+                        <p class="text-xs text-gray-500 max-w-sm mx-auto mb-4">Comienza creando una carpeta raíz para englobar tus ideas generales como "Héroes", "Armas", "Mecánicas" o "Habilidades".</p>
+                        <button onclick="openGroupModal(null)" class="bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-700 font-semibold text-xs px-4 py-2 rounded-lg transition inline-flex items-center gap-1.5">
+                            + Crear Grupo Raíz
+                        </button>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+            container.innerHTML = generateTreeHTML(treeData);
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>
